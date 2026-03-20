@@ -1,0 +1,611 @@
+<!DOCTYPE html>
+<html lang="it">
+<head>
+  <meta charset="UTF-8" />
+  <meta name="viewport" content="width=device-width, initial-scale=1.0" />
+  <title>Monitor Notizie Politiche – Ministero dei Rapporti con il Parlamento</title>
+
+  <link rel="preconnect" href="https://fonts.googleapis.com" />
+  <link href="https://fonts.googleapis.com/css2?family=Playfair+Display:wght@700;900&family=Source+Sans+3:wght@300;400;600&display=swap" rel="stylesheet" />
+
+  <style>
+    /* ── RESET & VARIABILI ─────────────────────────────────────────── */
+    *, *::before, *::after { box-sizing: border-box; margin: 0; padding: 0; }
+
+    :root {
+      --blu-ist:   #003366;
+      --blu-mid:   #00509e;
+      --oro:       #c9a84c;
+      --oro-light: #e8cc7a;
+      --grigio-bg: #f4f3ef;
+      --grigio-bd: #ddd9d0;
+      --testo:     #1a1a2e;
+      --testo-sec: #5a5a6e;
+      --errore:    #c0392b;
+      --verde:     #1a6b3a;
+      --bianco:    #ffffff;
+      --radius:    4px;
+      --shadow:    0 2px 12px rgba(0,0,0,.10);
+    }
+
+    html { scroll-behavior: smooth; }
+
+    body {
+      font-family: 'Source Sans 3', sans-serif;
+      background: var(--grigio-bg);
+      color: var(--testo);
+      min-height: 100vh;
+    }
+
+    /* ── HEADER ISTITUZIONALE ──────────────────────────────────────── */
+    .header {
+      background: var(--blu-ist);
+      border-bottom: 4px solid var(--oro);
+      padding: 0;
+    }
+
+    .header-top {
+      display: flex;
+      align-items: center;
+      gap: 18px;
+      padding: 18px 40px;
+    }
+
+    .header-logo {
+      width: 52px;
+      height: 52px;
+      flex-shrink: 0;
+    }
+
+    .header-titles {
+      flex: 1;
+    }
+
+    .header-ministero {
+      font-size: .72rem;
+      letter-spacing: .12em;
+      text-transform: uppercase;
+      color: var(--oro-light);
+      font-weight: 600;
+    }
+
+    .header-titolo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.55rem;
+      color: var(--bianco);
+      line-height: 1.2;
+    }
+
+    .header-bar {
+      background: var(--blu-mid);
+      padding: 8px 40px;
+      display: flex;
+      align-items: center;
+      justify-content: space-between;
+      font-size: .78rem;
+      color: rgba(255,255,255,.75);
+    }
+
+    #ultimo-aggiornamento { font-weight: 600; color: var(--oro-light); }
+
+    .btn-aggiorna {
+      background: var(--oro);
+      color: var(--blu-ist);
+      border: none;
+      padding: 6px 18px;
+      border-radius: var(--radius);
+      font-family: 'Source Sans 3', sans-serif;
+      font-weight: 600;
+      font-size: .8rem;
+      cursor: pointer;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      transition: background .2s;
+    }
+    .btn-aggiorna:hover { background: var(--oro-light); }
+    .btn-aggiorna:disabled { opacity: .5; cursor: not-allowed; }
+
+    /* ── LAYOUT PRINCIPALE ─────────────────────────────────────────── */
+    .container {
+      max-width: 1200px;
+      margin: 0 auto;
+      padding: 32px 24px 64px;
+    }
+
+    /* ── STATISTICHE ───────────────────────────────────────────────── */
+    .stats-bar {
+      display: grid;
+      grid-template-columns: repeat(auto-fit, minmax(160px, 1fr));
+      gap: 16px;
+      margin-bottom: 32px;
+    }
+
+    .stat-card {
+      background: var(--bianco);
+      border: 1px solid var(--grigio-bd);
+      border-top: 3px solid var(--blu-ist);
+      padding: 16px 20px;
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      opacity: 0;
+      transform: translateY(8px);
+      transition: opacity .4s, transform .4s;
+    }
+    .stat-card.visible { opacity: 1; transform: none; }
+
+    .stat-label {
+      font-size: .7rem;
+      letter-spacing: .1em;
+      text-transform: uppercase;
+      color: var(--testo-sec);
+      margin-bottom: 4px;
+    }
+
+    .stat-valore {
+      font-family: 'Playfair Display', serif;
+      font-size: 2rem;
+      color: var(--blu-ist);
+      line-height: 1;
+    }
+
+    /* ── FILTRI ────────────────────────────────────────────────────── */
+    .filtri-bar {
+      display: flex;
+      gap: 8px;
+      flex-wrap: wrap;
+      margin-bottom: 28px;
+      align-items: center;
+    }
+
+    .filtri-label {
+      font-size: .75rem;
+      text-transform: uppercase;
+      letter-spacing: .08em;
+      color: var(--testo-sec);
+      margin-right: 4px;
+    }
+
+    .filtro-btn {
+      background: var(--bianco);
+      border: 1px solid var(--grigio-bd);
+      color: var(--testo-sec);
+      padding: 5px 16px;
+      border-radius: 20px;
+      font-size: .8rem;
+      cursor: pointer;
+      font-family: 'Source Sans 3', sans-serif;
+      transition: all .18s;
+    }
+    .filtro-btn:hover,
+    .filtro-btn.attivo {
+      background: var(--blu-ist);
+      border-color: var(--blu-ist);
+      color: var(--bianco);
+    }
+
+    /* ── SEZIONE FEED ──────────────────────────────────────────────── */
+    .feed-section {
+      margin-bottom: 40px;
+    }
+
+    .feed-header {
+      display: flex;
+      align-items: baseline;
+      gap: 12px;
+      border-bottom: 2px solid var(--grigio-bd);
+      padding-bottom: 8px;
+      margin-bottom: 20px;
+    }
+
+    .feed-nome {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.3rem;
+      color: var(--blu-ist);
+    }
+
+    .feed-badge {
+      font-size: .7rem;
+      background: var(--blu-ist);
+      color: var(--bianco);
+      padding: 2px 8px;
+      border-radius: 20px;
+      letter-spacing: .06em;
+      text-transform: uppercase;
+    }
+
+    .feed-url {
+      font-size: .72rem;
+      color: var(--testo-sec);
+      margin-left: auto;
+      text-decoration: none;
+    }
+    .feed-url:hover { color: var(--blu-mid); }
+
+    /* ── GRIGLIA ARTICOLI ──────────────────────────────────────────── */
+    .articoli-grid {
+      display: grid;
+      grid-template-columns: repeat(auto-fill, minmax(320px, 1fr));
+      gap: 18px;
+    }
+
+    .articolo-card {
+      background: var(--bianco);
+      border: 1px solid var(--grigio-bd);
+      border-radius: var(--radius);
+      box-shadow: var(--shadow);
+      display: flex;
+      flex-direction: column;
+      overflow: hidden;
+      opacity: 0;
+      transform: translateY(10px);
+      transition: opacity .35s, transform .35s, box-shadow .2s;
+    }
+    .articolo-card.visible { opacity: 1; transform: none; }
+    .articolo-card:hover { box-shadow: 0 6px 24px rgba(0,0,0,.14); }
+
+    .card-fonte-bar {
+      height: 3px;
+      background: var(--oro);
+    }
+
+    .card-body {
+      padding: 18px 20px;
+      flex: 1;
+      display: flex;
+      flex-direction: column;
+    }
+
+    .card-data {
+      font-size: .72rem;
+      color: var(--testo-sec);
+      text-transform: uppercase;
+      letter-spacing: .06em;
+      margin-bottom: 8px;
+    }
+
+    .card-titolo {
+      font-family: 'Playfair Display', serif;
+      font-size: 1.05rem;
+      line-height: 1.35;
+      color: var(--testo);
+      margin-bottom: 10px;
+    }
+
+    .card-desc {
+      font-size: .85rem;
+      color: var(--testo-sec);
+      line-height: 1.5;
+      flex: 1;
+      /* Tronca dopo 3 righe */
+      display: -webkit-box;
+      -webkit-line-clamp: 3;
+      -webkit-box-orient: vertical;
+      overflow: hidden;
+    }
+
+    .card-footer {
+      padding: 10px 20px 14px;
+      border-top: 1px solid var(--grigio-bd);
+      display: flex;
+      justify-content: flex-end;
+    }
+
+    .card-link {
+      font-size: .78rem;
+      font-weight: 600;
+      color: var(--blu-mid);
+      text-decoration: none;
+      letter-spacing: .04em;
+      text-transform: uppercase;
+      display: inline-flex;
+      align-items: center;
+      gap: 5px;
+      transition: color .15s;
+    }
+    .card-link:hover { color: var(--blu-ist); }
+    .card-link::after { content: '→'; }
+
+    /* ── STATO: LOADING ────────────────────────────────────────────── */
+    #stato-loading {
+      display: none;
+      text-align: center;
+      padding: 60px 20px;
+    }
+    .spinner {
+      width: 40px; height: 40px;
+      border: 3px solid var(--grigio-bd);
+      border-top-color: var(--blu-ist);
+      border-radius: 50%;
+      animation: spin .8s linear infinite;
+      margin: 0 auto 16px;
+    }
+    @keyframes spin { to { transform: rotate(360deg); } }
+    .loading-testo { color: var(--testo-sec); font-size: .9rem; }
+
+    /* ── STATO: ERRORI ─────────────────────────────────────────────── */
+    .errore-banner {
+      background: #fdf3f2;
+      border: 1px solid #e8b4ae;
+      border-left: 4px solid var(--errore);
+      padding: 14px 20px;
+      border-radius: var(--radius);
+      margin-bottom: 20px;
+      display: flex;
+      align-items: flex-start;
+      gap: 12px;
+    }
+    .errore-icona { font-size: 1.2rem; flex-shrink: 0; }
+    .errore-testo strong { display: block; color: var(--errore); font-size: .9rem; margin-bottom: 3px; }
+    .errore-testo span { font-size: .82rem; color: var(--testo-sec); }
+
+    .errore-critico {
+      text-align: center;
+      padding: 60px 20px;
+      color: var(--errore);
+    }
+    .errore-critico h2 { font-family: 'Playfair Display', serif; font-size: 1.5rem; margin-bottom: 8px; }
+    .errore-critico p { font-size: .9rem; color: var(--testo-sec); }
+
+    /* ── FOOTER ────────────────────────────────────────────────────── */
+    footer {
+      background: var(--blu-ist);
+      border-top: 3px solid var(--oro);
+      padding: 20px 40px;
+      text-align: center;
+      font-size: .75rem;
+      color: rgba(255,255,255,.55);
+      letter-spacing: .04em;
+    }
+
+    /* ── RESPONSIVE ────────────────────────────────────────────────── */
+    @media (max-width: 640px) {
+      .header-top { padding: 14px 20px; }
+      .header-bar { padding: 8px 20px; }
+      .container { padding: 20px 16px 48px; }
+      .articoli-grid { grid-template-columns: 1fr; }
+      .header-titolo { font-size: 1.2rem; }
+    }
+  </style>
+</head>
+<body>
+
+<!-- ── HEADER ─────────────────────────────────────────────────────────── -->
+<header class="header">
+  <div class="header-top">
+    <!-- Stemma Repubblica Italiana (SVG inline) -->
+    <svg class="header-logo" viewBox="0 0 100 100" xmlns="http://www.w3.org/2000/svg" aria-label="Stemma della Repubblica Italiana">
+      <!-- Sfondo circolare verde -->
+      <circle cx="50" cy="50" r="48" fill="#009246" stroke="#c9a84c" stroke-width="3"/>
+      <!-- Fascia bianca -->
+      <circle cx="50" cy="50" r="34" fill="#ffffff"/>
+      <!-- Fascia rossa -->
+      <circle cx="50" cy="50" r="22" fill="#ce2b37"/>
+      <!-- Stella bianca a 5 punte -->
+      <polygon points="50,33 53.5,43.5 64.5,43.5 55.5,50 59,60.5 50,54 41,60.5 44.5,50 35.5,43.5 46.5,43.5"
+               fill="#ffffff" stroke="#c9a84c" stroke-width=".5"/>
+    </svg>
+    <div class="header-titles">
+      <p class="header-ministero">Repubblica Italiana</p>
+      <h1 class="header-titolo">Monitor Notizie Politiche</h1>
+    </div>
+  </div>
+  <div class="header-bar">
+    <span>Ministero dei Rapporti con il Parlamento — Ufficio Comunicazione Istituzionale</span>
+    <span>Ultimo aggiornamento: <span id="ultimo-aggiornamento">—</span></span>
+    <button class="btn-aggiorna" id="btn-aggiorna" onclick="caricaNotizie()">↻ Aggiorna</button>
+  </div>
+</header>
+
+<!-- ── CONTENUTO ──────────────────────────────────────────────────────── -->
+<main class="container">
+
+  <!-- Statistiche -->
+  <div class="stats-bar" id="stats-bar" style="display:none">
+    <div class="stat-card" id="stat-totale">
+      <p class="stat-label">Articoli totali</p>
+      <p class="stat-valore" id="val-totale">0</p>
+    </div>
+    <div class="stat-card" id="stat-feeds">
+      <p class="stat-label">Feed attivi</p>
+      <p class="stat-valore" id="val-feeds">0</p>
+    </div>
+    <div class="stat-card" id="stat-errori">
+      <p class="stat-label">Feed non disponibili</p>
+      <p class="stat-valore" id="val-errori">0</p>
+    </div>
+  </div>
+
+  <!-- Filtri fonte -->
+  <div class="filtri-bar" id="filtri-bar" style="display:none">
+    <span class="filtri-label">Fonte:</span>
+    <button class="filtro-btn attivo" data-fonte="tutti" onclick="filtra('tutti', this)">Tutte</button>
+  </div>
+
+  <!-- Loading -->
+  <div id="stato-loading">
+    <div class="spinner"></div>
+    <p class="loading-testo">Recupero notizie dai feed istituzionali…</p>
+  </div>
+
+  <!-- Contenuto notizie -->
+  <div id="contenuto-notizie"></div>
+
+</main>
+
+<!-- ── FOOTER ─────────────────────────────────────────────────────────── -->
+<footer>
+  &copy; <span id="anno"></span> Ministero dei Rapporti con il Parlamento — Uso interno — Dati forniti da feed RSS istituzionali pubblici
+</footer>
+
+<script>
+  document.getElementById('anno').textContent = new Date().getFullYear();
+
+  // Dati globali
+  let datiGlobali = null;
+
+  // ── Formattazione data ISO ─────────────────────────────────────────────
+  function formatData(iso) {
+    if (!iso) return 'Data non disponibile';
+    const d = new Date(iso);
+    return d.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+  }
+
+  // ── Reveal animation ──────────────────────────────────────────────────
+  function revealCards() {
+    const cards = document.querySelectorAll('.stat-card, .articolo-card');
+    let delay = 0;
+    cards.forEach(card => {
+      setTimeout(() => card.classList.add('visible'), delay);
+      delay += 40;
+    });
+  }
+
+  // ── Filtra per fonte ───────────────────────────────────────────────────
+  function filtra(fonte, el) {
+    document.querySelectorAll('.filtro-btn').forEach(b => b.classList.remove('attivo'));
+    el.classList.add('attivo');
+
+    document.querySelectorAll('.feed-section').forEach(section => {
+      if (fonte === 'tutti' || section.dataset.fonte === fonte) {
+        section.style.display = '';
+      } else {
+        section.style.display = 'none';
+      }
+    });
+  }
+
+  // ── Render principale ──────────────────────────────────────────────────
+  function renderNotizie(dati) {
+    const contenuto = document.getElementById('contenuto-notizie');
+    const filtriBar = document.getElementById('filtri-bar');
+    const statsBar  = document.getElementById('stats-bar');
+    contenuto.innerHTML = '';
+
+    // Errore critico: tutti i feed down
+    if (dati.stato === 'errore_critico') {
+      contenuto.innerHTML = `
+        <div class="errore-critico">
+          <h2>⚠ Servizio momentaneamente non disponibile</h2>
+          <p>${dati.messaggio_utente || 'Impossibile recuperare le notizie. Riprovare tra qualche minuto.'}</p>
+        </div>`;
+      return;
+    }
+
+    // Banner errori parziali
+    if (dati.errori && dati.errori.length > 0) {
+      dati.errori.forEach(err => {
+        contenuto.innerHTML += `
+          <div class="errore-banner">
+            <span class="errore-icona">⚠</span>
+            <div class="errore-testo">
+              <strong>${err.feed}</strong>
+              <span>Servizio momentaneamente non disponibile</span>
+            </div>
+          </div>`;
+      });
+    }
+
+    // Statistiche
+    const totArticoli = dati.feeds.reduce((s, f) => s + f.conteggio, 0);
+    document.getElementById('val-totale').textContent = totArticoli;
+    document.getElementById('val-feeds').textContent  = dati.feeds.length;
+    document.getElementById('val-errori').textContent = (dati.errori || []).length;
+    statsBar.style.display = '';
+
+    // Filtri
+    filtriBar.style.display = '';
+    const filtriConteiner = document.getElementById('filtri-bar');
+    // Rimuovi filtri esistenti eccetto "Tutte"
+    filtriConteiner.querySelectorAll('[data-fonte]:not([data-fonte="tutti"])').forEach(b => b.remove());
+    dati.feeds.forEach(feed => {
+      const btn = document.createElement('button');
+      btn.className = 'filtro-btn';
+      btn.dataset.fonte = feed.fonte;
+      btn.textContent = feed.nome;
+      btn.onclick = function() { filtra(feed.fonte, this); };
+      filtriConteiner.appendChild(btn);
+    });
+
+    // Sezioni feed
+    dati.feeds.forEach(feed => {
+      const section = document.createElement('section');
+      section.className = 'feed-section';
+      section.dataset.fonte = feed.fonte;
+
+      section.innerHTML = `
+        <div class="feed-header">
+          <h2 class="feed-nome">${feed.nome}</h2>
+          <span class="feed-badge">${feed.conteggio} art.</span>
+          <a class="feed-url" href="${feed.url}" target="_blank" rel="noopener">↗ RSS</a>
+        </div>
+        <div class="articoli-grid">
+          ${feed.articoli.map(a => `
+            <article class="articolo-card">
+              <div class="card-fonte-bar"></div>
+              <div class="card-body">
+                <p class="card-data">${formatData(a.data_iso)}</p>
+                <h3 class="card-titolo">${a.titolo}</h3>
+                <p class="card-desc">${a.descrizione || 'Nessuna descrizione disponibile.'}</p>
+              </div>
+              <div class="card-footer">
+                <a class="card-link" href="${a.link}" target="_blank" rel="noopener">Leggi articolo</a>
+              </div>
+            </article>
+          `).join('')}
+        </div>`;
+
+      contenuto.appendChild(section);
+    });
+
+    setTimeout(revealCards, 50);
+  }
+
+  // ── Caricamento dati ───────────────────────────────────────────────────
+  async function caricaNotizie() {
+    const loading = document.getElementById('stato-loading');
+    const btn     = document.getElementById('btn-aggiorna');
+    const contenuto = document.getElementById('contenuto-notizie');
+
+    loading.style.display = '';
+    btn.disabled = true;
+    document.getElementById('stats-bar').style.display = 'none';
+    document.getElementById('filtri-bar').style.display = 'none';
+    contenuto.innerHTML = '';
+
+    try {
+      const risposta = await fetch('api_politica.php', { cache: 'no-cache' });
+
+      if (!risposta.ok) {
+        throw new Error(`HTTP ${risposta.status}`);
+      }
+
+      const dati = await risposta.json();
+      datiGlobali = dati;
+
+      // Aggiorna timestamp
+      const ora = new Date(dati.generato_il || Date.now());
+      document.getElementById('ultimo-aggiornamento').textContent =
+        ora.toLocaleTimeString('it-IT', { hour: '2-digit', minute: '2-digit' }) + ' del ' +
+        ora.toLocaleDateString('it-IT', { day: '2-digit', month: 'long', year: 'numeric' });
+
+      renderNotizie(dati);
+
+    } catch (err) {
+      contenuto.innerHTML = `
+        <div class="errore-critico">
+          <h2>⚠ Servizio momentaneamente non disponibile</h2>
+          <p>Impossibile contattare il server di backend. Verificare la connessione o riprovare tra qualche minuto.</p>
+          <p style="margin-top:8px;font-size:.78rem;color:#999">Dettaglio tecnico: ${err.message}</p>
+        </div>`;
+    } finally {
+      loading.style.display = 'none';
+      btn.disabled = false;
+    }
+  }
+
+  // ── Avvio ──────────────────────────────────────────────────────────────
+  document.getElementById('stato-loading').style.display = '';
+  caricaNotizie();
+</script>
+</body>
+</html>
